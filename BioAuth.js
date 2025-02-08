@@ -1,6 +1,6 @@
 class BiometricAuthExtension {
     constructor() {
-        this.credentialStorage = {}; // Store multiple credentials in session memory
+        this.credentialStorage = {}; // Temporarily store credentials in memory for session
     }
 
     getInfo() {
@@ -28,9 +28,10 @@ class BiometricAuthExtension {
                 {
                     opcode: "getCredentialId",
                     blockType: Scratch.BlockType.REPORTER,
-                    text: "Get stored passkey for [NAME]",
+                    text: "Get stored passkey for [NAME] from [SOURCE]",
                     arguments: {
-                        NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "username" }
+                        NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "username" },
+                        SOURCE: { type: Scratch.ArgumentType.STRING, defaultValue: "cloud" } // Default to cloud variable
                     }
                 }
             ]
@@ -61,9 +62,9 @@ class BiometricAuthExtension {
             });
 
             let credentialId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-            this.credentialStorage[username] = credentialId;
+            this.credentialStorage[username] = credentialId; // Save it in the session memory
 
-            return credentialId; // Returns the passkey so you can store it
+            return credentialId; // Return the created credential ID
         } catch (error) {
             return "Error: " + error.message;
         }
@@ -103,7 +104,33 @@ class BiometricAuthExtension {
     }
 
     getCredentialId(args) {
-        return this.credentialStorage[args.NAME] || "";
+        const username = args.NAME;
+        const source = args.SOURCE.toLowerCase();
+
+        // Check the source
+        if (source === "cloud") {
+            // Fetch from TurboWarp cloud variable (example logic)
+            return this.fetchFromCloud(username); // Implement fetching from your cloud variable
+        } else if (source === "list") {
+            // Fetch from a custom list if that's the source
+            return this.fetchFromList(username); // Implement custom list fetching logic
+        } else {
+            // Default to session memory storage
+            return this.credentialStorage[username] || "";
+        }
+    }
+
+    fetchFromCloud(username) {
+        // Implement the logic to fetch from your cloud variable (TurboWarp Cloud Data or custom)
+        // You can replace this with your actual cloud fetch logic.
+        // For example, fetch using your server or WebSocket API.
+        return "cloud-fetched-credential-id"; // Replace with actual logic
+    }
+
+    fetchFromList(username) {
+        // Implement the logic to fetch from a custom list.
+        // This can be from a local list or any external data structure you use.
+        return "list-fetched-credential-id"; // Replace with actual logic
     }
 }
 
