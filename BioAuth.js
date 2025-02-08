@@ -1,8 +1,4 @@
 class BiometricAuthExtension {
-    constructor() {
-        this.credentialStorage = {}; // Temporarily store credentials in memory for session
-    }
-
     getInfo() {
         return {
             id: "biometricAuth",
@@ -28,10 +24,10 @@ class BiometricAuthExtension {
                 {
                     opcode: "getCredentialId",
                     blockType: Scratch.BlockType.REPORTER,
-                    text: "Get stored passkey for [NAME] from [SOURCE]",
+                    text: "Get credential ID for [USERNAME] from [LIST]",
                     arguments: {
-                        NAME: { type: Scratch.ArgumentType.STRING, defaultValue: "username" },
-                        SOURCE: { type: Scratch.ArgumentType.STRING, defaultValue: "cloud" } // Default to cloud variable
+                        USERNAME: { type: Scratch.ArgumentType.STRING, defaultValue: "username" },
+                        LIST: { type: Scratch.ArgumentType.STRING, defaultValue: "userCredentialList" }
                     }
                 }
             ]
@@ -62,9 +58,8 @@ class BiometricAuthExtension {
             });
 
             let credentialId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
-            this.credentialStorage[username] = credentialId; // Save it in the session memory
 
-            return credentialId; // Return the created credential ID
+            return credentialId; // Return the credential ID that was created
         } catch (error) {
             return "Error: " + error.message;
         }
@@ -76,7 +71,7 @@ class BiometricAuthExtension {
         }
 
         const username = args.NAME;
-        let credentialId = args.CREDENTIAL_ID || this.credentialStorage[username];
+        const credentialId = args.CREDENTIAL_ID;
 
         if (!credentialId) {
             return false;
@@ -104,33 +99,45 @@ class BiometricAuthExtension {
     }
 
     getCredentialId(args) {
-        const username = args.NAME;
-        const source = args.SOURCE.toLowerCase();
+        const username = args.USERNAME;
+        const listName = args.LIST;
 
-        // Check the source
-        if (source === "cloud") {
-            // Fetch from TurboWarp cloud variable (example logic)
-            return this.fetchFromCloud(username); // Implement fetching from your cloud variable
-        } else if (source === "list") {
-            // Fetch from a custom list if that's the source
-            return this.fetchFromList(username); // Implement custom list fetching logic
-        } else {
-            // Default to session memory storage
-            return this.credentialStorage[username] || "";
+        // Fetch the external list (this could be a cloud variable, custom data structure, etc.)
+        const externalList = getExternalList(listName);  // You should provide this method to get the list dynamically
+
+        if (!externalList) {
+            return "Error: List not found";
         }
-    }
 
-    fetchFromCloud(username) {
-        // Implement the logic to fetch from your cloud variable (TurboWarp Cloud Data or custom)
-        // You can replace this with your actual cloud fetch logic.
-        // For example, fetch using your server or WebSocket API.
-        return "cloud-fetched-credential-id"; // Replace with actual logic
-    }
+        // Iterate over the list to find the username and retrieve the corresponding credential ID
+        for (let i = 0; i < externalList.length; i += 2) {
+            const storedUsername = externalList[i];  // Assuming format is Username -> Credential ID -> Username -> Credential ID ...
+            const storedCredentialId = externalList[i + 1];
 
-    fetchFromList(username) {
-        // Implement the logic to fetch from a custom list.
-        // This can be from a local list or any external data structure you use.
-        return "list-fetched-credential-id"; // Replace with actual logic
+            if (storedUsername === username) {
+                return storedCredentialId;  // Return the corresponding credential ID
+            }
+        }
+
+        return "No passkey found"; // If no matching username is found
+    }
+}
+
+// Example of how you might fetch the external list of credential IDs
+function getExternalList(listName) {
+    // Fetch the list from your cloud variable or external source based on the listName
+    // Example: You can use cloudData.getVariable() or any other method to fetch the list
+
+    // Placeholder example for testing purposes
+    // Replace this with your actual cloud data or external list fetching logic
+    if (listName === "userCredentialList") {
+        return [
+            "user1", "credential-id-1",
+            "user2", "credential-id-2",
+            "user3", "credential-id-3"
+        ];
+    } else {
+        return null; // If the list name doesn't exist or isn't found
     }
 }
 
