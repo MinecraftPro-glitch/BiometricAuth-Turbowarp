@@ -27,7 +27,10 @@ class BiometricAuthExtension {
                     text: "Get credential ID for [USERNAME] from [LIST]",
                     arguments: {
                         USERNAME: { type: Scratch.ArgumentType.STRING, defaultValue: "username" },
-                        LIST: { type: Scratch.ArgumentType.STRING, defaultValue: "userCredentialList" }
+                        LIST: {
+                            type: Scratch.ArgumentType.LIST,
+                            defaultValue: "userCredentialList"
+                        }
                     }
                 }
             ]
@@ -100,44 +103,19 @@ class BiometricAuthExtension {
 
     getCredentialId(args) {
         const username = args.USERNAME;
-        const listName = args.LIST;
+        const list = args.LIST;
 
-        // Fetch the external list (this could be a cloud variable, custom data structure, etc.)
-        const externalList = getExternalList(listName);  // You should provide this method to get the list dynamically
-
-        if (!externalList) {
-            return "Error: List not found";
-        }
-
-        // Iterate over the list to find the username and retrieve the corresponding credential ID
-        for (let i = 0; i < externalList.length; i += 2) {
-            const storedUsername = externalList[i];  // Assuming format is Username -> Credential ID -> Username -> Credential ID ...
-            const storedCredentialId = externalList[i + 1];
+        // Iterate through the list, assuming the format [Username, Credential ID, Username, Credential ID, ...]
+        for (let i = 1; i <= list.length; i += 2) {
+            const storedUsername = list[i - 1]; // Username
+            const storedCredentialId = list[i];  // Credential ID
 
             if (storedUsername === username) {
-                return storedCredentialId;  // Return the corresponding credential ID
+                return storedCredentialId; // Return the matching credential ID
             }
         }
 
         return "No passkey found"; // If no matching username is found
-    }
-}
-
-// Example of how you might fetch the external list of credential IDs
-function getExternalList(listName) {
-    // Fetch the list from your cloud variable or external source based on the listName
-    // Example: You can use cloudData.getVariable() or any other method to fetch the list
-
-    // Placeholder example for testing purposes
-    // Replace this with your actual cloud data or external list fetching logic
-    if (listName === "userCredentialList") {
-        return [
-            "user1", "credential-id-1",
-            "user2", "credential-id-2",
-            "user3", "credential-id-3"
-        ];
-    } else {
-        return null; // If the list name doesn't exist or isn't found
     }
 }
 
