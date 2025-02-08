@@ -105,16 +105,24 @@ class BiometricAuthExtension {
         const username = args.USERNAME;
         const list = args.LIST;
 
+        // Check the list format
+        console.log("List:", list);
+        console.log("Searching for username:", username);
+
         // Iterate through the list, assuming the format [Username, Credential ID, Username, Credential ID, ...]
         for (let i = 1; i <= list.length; i += 2) {
             const storedUsername = list[i - 1]; // Username
             const storedCredentialId = list[i];  // Credential ID
 
+            console.log(`Checking: ${storedUsername} -> ${storedCredentialId}`);
+
             if (storedUsername === username) {
+                console.log("Found:", storedCredentialId);
                 return storedCredentialId; // Return the matching credential ID
             }
         }
 
+        console.log("No match found.");
         return "No passkey found"; // If no matching username is found
     }
 }
