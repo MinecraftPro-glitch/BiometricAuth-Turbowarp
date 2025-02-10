@@ -3,6 +3,12 @@
 ## Overview
 The **Biometric Authentication Extension** adds passkey-based authentication functionality to Scratch projects using WebAuthn. This extension enables user registration with passkeys and authentication using biometric data such as fingerprint or facial recognition.
 
+## To Use
+To use the extension download the file **BiometricAuthentication.js** and import it into TurboWarp using the custom Javascript Extension feature. Make sure to check the box "Run without sandbox"
+
+**The extension only works in web browsers if you import this extension into _TurboWarp Desktop App_ it is always going to report an error since it doesn't include _WebAuth_, the block are still going to be visible and you'll be able to code with the extension but the authentication will not work!**
+
+
 ## Features
 - **Register a Passkey**: Allows users to register a passkey for authentication.
 - **Authenticate Users**: Verifies users based on their registered passkey.
