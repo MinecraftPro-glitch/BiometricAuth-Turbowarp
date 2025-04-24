@@ -1,3 +1,9 @@
+//#Name - Biometric Authentication 
+//#Author - Maxolain1020
+//#Version - 2.5
+
+
+
 class BiometricAuthExtension {
     getInfo() {
         return {
